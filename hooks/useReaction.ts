@@ -11,7 +11,8 @@ export const useReaction = () => {
     particles: 0
   });
 
-  const mixSubstance = (type: 'acid' | 'base' | 'metal' | 'neutral') => {
+  // Updated to accept the chemical name and its pH impact strength
+  const mixSubstance = (type: 'acid' | 'base' | 'metal', chemName: string, strength: number) => {
     setSolution((prev) => {
       let newPh = prev.ph;
       let newColor = prev.color;
@@ -19,15 +20,15 @@ export const useReaction = () => {
       let newEq = prev.equation;
 
       if (type === 'acid') {
-        newPh = Math.max(1, prev.ph - 1.5);
+        newPh = Math.max(1, prev.ph - strength);
         newColor = `hsl(0, 100%, ${40 + newPh * 5}%)`;
-        newName = newPh < 4 ? "Strong Acidic Solution" : "Weak Acidic Solution";
-        newEq = "H₃O⁺ Concentration Increasing";
+        newName = `${chemName} Solution`;
+        newEq = `H₃O⁺ Concentration Increased by ${chemName}`;
       } else if (type === 'base') {
-        newPh = Math.min(14, prev.ph + 1.5);
+        newPh = Math.min(14, prev.ph + strength);
         newColor = `hsl(240, 100%, ${40 + (14 - newPh) * 5}%)`;
-        newName = newPh > 10 ? "Strong Basic Solution" : "Weak Basic Solution";
-        newEq = "OH⁻ Concentration Increasing";
+        newName = `${chemName} Solution`;
+        newEq = `OH⁻ Concentration Increased by ${chemName}`;
       } else if (type === 'metal') {
         newColor = "#f39c12";
         newName = "Exothermic Metal Reaction";
@@ -53,6 +54,5 @@ export const useReaction = () => {
     });
   };
 
-  // ADD setSolution HERE:
   return { solution, mixSubstance, setSolution }; 
 };

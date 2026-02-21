@@ -1,11 +1,27 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Float, ContactShadows } from '@react-three/drei';
 import { Bloom, EffectComposer, Vignette, Scanline } from '@react-three/postprocessing';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReaction } from '../hooks/useReaction';
+import Beaker from '../components/Beaker';
 import Liquid from '../components/Liquid';
+
+// Define the detailed chemical lists
+const ACIDS = [
+  { name: "Hydrochloric Acid", formula: "HCl", strength: 2.0 },
+  { name: "Sulfuric Acid", formula: "H₂SO₄", strength: 2.5 },
+  { name: "Nitric Acid", formula: "HNO₃", strength: 2.2 },
+  { name: "Acetic Acid", formula: "CH₃COOH", strength: 0.8 },
+];
+
+const BASES = [
+  { name: "Sodium Hydroxide", formula: "NaOH", strength: 2.5 },
+  { name: "Potassium Hydroxide", formula: "KOH", strength: 2.3 },
+  { name: "Ammonia", formula: "NH₃", strength: 1.2 },
+  { name: "Calcium Hydroxide", formula: "Ca(OH)₂", strength: 1.5 },
+];
 
 export default function ChemicalRoom() {
   const { solution, mixSubstance, setSolution } = useReaction();
@@ -13,11 +29,13 @@ export default function ChemicalRoom() {
   const [history, setHistory] = useState<string[]>([]);
 
   // Function to handle mixing and logging
-  const handleMix = (type: 'acid' | 'base' | 'metal', name: string) => {
-    mixSubstance(type);
+  // Function to handle mixing and logging
+  const handleMix = (type: 'acid' | 'base' | 'metal', name: string, strength: number = 1.5) => {
+    // FIX: Pass 'name' and 'strength' into the function call
+    mixSubstance(type, name, strength); 
+    
     setHistory((prev) => [name, ...prev].slice(0, 5));
   };
-
   const resetLab = () => {
     setSolution({
       name: "Empty Beaker",
@@ -35,28 +53,31 @@ export default function ChemicalRoom() {
       
       {/* 3D RENDER ENGINE */}
       <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+        <Canvas camera={{ position: [0, 2, 5], fov: 45 }}>
           <color attach="background" args={['#020202']} />
-          <ambientLight intensity={0.2} />
-          <pointLight position={[10, 10, 10]} intensity={1.5} color={solution.color} />
-          <spotLight position={[0, 5, 0]} intensity={2} distance={10} angle={0.5} />
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} intensity={2} color={solution.color} />
           
-          <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-            <Liquid 
-              color={solution.color} 
-              distort={solution.intensity} 
-              speed={solution.intensity * 2} 
-            />
+          <Float speed={isEntered ? 1.5 : 0.5} rotationIntensity={0.2} floatIntensity={0.2}>
+            <group>
+              <Beaker />
+              <Liquid 
+                color={isEntered ? solution.color : "#1a1a1a"} 
+                distort={isEntered ? solution.intensity : 0.1} 
+                speed={isEntered ? solution.intensity : 0.2} 
+              />
+            </group>
           </Float>
 
-          <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={10} blur={2} />
+          <gridHelper args={[20, 20, "#111", "#111"]} position={[0, -2, 0]} />
+          <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={10} blur={2.5} />
           
           <EffectComposer>
-            <Bloom luminanceThreshold={0.1} mipmapBlur intensity={solution.intensity + 0.8} />
-            <Scanline opacity={0.1} />
+            <Bloom luminanceThreshold={0.1} mipmapBlur intensity={solution.intensity + 0.5} />
+            <Scanline opacity={0.05} />
             <Vignette darkness={1.2} />
           </EffectComposer>
-          <OrbitControls enableZoom={false} />
+          <OrbitControls enableZoom={true} makeDefault />
         </Canvas>
       </div>
 
@@ -68,13 +89,10 @@ export default function ChemicalRoom() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+            transition={{ duration: 0.8 }}
             className="relative z-20 flex flex-col items-center justify-center h-full bg-black/40 backdrop-blur-sm"
           >
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className="text-center"
-            >
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
               <h1 className="text-7xl md:text-9xl font-black tracking-tighter mb-4 italic">
                 THE <span className="text-blue-500">ROOM</span>
               </h1>
@@ -145,39 +163,53 @@ export default function ChemicalRoom() {
             {/* INTERACTIVE REAGENT SHELVES */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pointer-events-auto">
               
-              {/* SHELF A: ACIDS (RED) */}
-              <div className="bg-red-500/5 border border-red-500/10 p-5 backdrop-blur-md rounded-2xl transition-all hover:border-red-500/30 group">
+              {/* SHELF A: ACIDS */}
+              <div className="bg-red-500/5 border border-red-500/10 p-5 backdrop-blur-md rounded-2xl transition-all hover:border-red-500/30 group overflow-y-auto max-h-64">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1 h-3 bg-red-500" />
-                  <p className="text-red-500 font-mono text-[10px] uppercase font-bold tracking-widest">Shelf 01: Acids</p>
+                  <p className="text-red-500 font-mono text-[10px] uppercase font-bold tracking-widest">Vault 01: Acids</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <button onClick={() => handleMix('acid', 'Hydrochloric Acid')} className="w-full text-left px-4 py-3 bg-white/5 hover:bg-red-500 transition-all text-[10px] font-black uppercase rounded-lg border border-white/5">HCl (Hydrochloric)</button>
-                  <button onClick={() => handleMix('acid', 'Sulfuric Acid')} className="w-full text-left px-4 py-3 bg-white/5 hover:bg-red-500 transition-all text-[10px] font-black uppercase rounded-lg border border-white/5">H₂SO₄ (Sulfuric)</button>
+                  {ACIDS.map((acid) => (
+                    <button 
+                      key={acid.name}
+                      onClick={() => handleMix('acid', acid.name, acid.strength)} 
+                      className="w-full text-left px-4 py-3 bg-white/5 hover:bg-red-500 transition-all text-[10px] font-black uppercase rounded-lg border border-white/5"
+                    >
+                      {acid.formula} ({acid.name})
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* SHELF B: BASES (BLUE) */}
-              <div className="bg-blue-500/5 border border-blue-500/10 p-5 backdrop-blur-md rounded-2xl transition-all hover:border-blue-500/30 group">
+              {/* SHELF B: BASES */}
+              <div className="bg-blue-500/5 border border-blue-500/10 p-5 backdrop-blur-md rounded-2xl transition-all hover:border-blue-500/30 group overflow-y-auto max-h-64">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1 h-3 bg-blue-500" />
-                  <p className="text-blue-500 font-mono text-[10px] uppercase font-bold tracking-widest">Shelf 02: Bases</p>
+                  <p className="text-blue-500 font-mono text-[10px] uppercase font-bold tracking-widest">Vault 02: Bases</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <button onClick={() => handleMix('base', 'Sodium Hydroxide')} className="w-full text-left px-4 py-3 bg-white/5 hover:bg-blue-500 transition-all text-[10px] font-black uppercase rounded-lg border border-white/5">NaOH (Sod. Hydroxide)</button>
-                  <button onClick={() => handleMix('base', 'Potassium Hydroxide')} className="w-full text-left px-4 py-3 bg-white/5 hover:bg-blue-500 transition-all text-[10px] font-black uppercase rounded-lg border border-white/5">KOH (Pot. Hydroxide)</button>
+                  {BASES.map((base) => (
+                    <button 
+                      key={base.name}
+                      onClick={() => handleMix('base', base.name, base.strength)} 
+                      className="w-full text-left px-4 py-3 bg-white/5 hover:bg-blue-500 transition-all text-[10px] font-black uppercase rounded-lg border border-white/5"
+                    >
+                      {base.formula} ({base.name})
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* SHELF C: SPECIAL / RESET */}
+              {/* SHELF C: REACTIVES / PURGE */}
               <div className="bg-orange-500/5 border border-orange-500/10 p-5 backdrop-blur-md rounded-2xl transition-all hover:border-orange-500/30 group">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1 h-3 bg-orange-500" />
-                  <p className="text-orange-500 font-mono text-[10px] uppercase font-bold tracking-widest">Shelf 03: Reactives</p>
+                  <p className="text-orange-500 font-mono text-[10px] uppercase font-bold tracking-widest">Vault 03: Special</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <button onClick={() => handleMix('metal', 'Pure Sodium Metal')} className="w-full text-left px-4 py-3 bg-white/5 hover:bg-orange-500 transition-all text-[10px] font-black uppercase rounded-lg border border-white/5">Sodium Metal (Na)</button>
-                  <button onClick={resetLab} className="w-full text-center px-4 py-3 border border-white/20 text-white hover:bg-white hover:text-black transition-all text-[10px] font-black uppercase rounded-lg mt-1 font-mono italic tracking-[0.2em]">Purge Chamber</button>
+                  <button onClick={() => handleMix('metal', 'Sodium Metal (Na)')} className="w-full text-left px-4 py-3 bg-white/5 hover:bg-orange-500 transition-all text-[10px] font-black uppercase rounded-lg border border-white/5">Sodium Metal (Na)</button>
+                  <button onClick={resetLab} className="w-full text-center px-4 py-3 border border-white/20 text-white hover:bg-white hover:text-black transition-all text-[10px] font-black uppercase rounded-lg mt-2 font-mono italic">Purge Beaker</button>
                 </div>
               </div>
 
