@@ -10,17 +10,74 @@ import Liquid from '../components/Liquid';
 
 // Define the detailed chemical lists
 const ACIDS = [
-  { name: "Hydrochloric Acid", formula: "HCl", strength: 2.0 },
-  { name: "Sulfuric Acid", formula: "H₂SO₄", strength: 2.5 },
-  { name: "Nitric Acid", formula: "HNO₃", strength: 2.2 },
-  { name: "Acetic Acid", formula: "CH₃COOH", strength: 0.8 },
+  // --- Mineral & Inorganic Acids ---
+  { name: "Periodic Acid", formula: "H₅IO₆", strength: 1.6 },
+  { name: "Chloric Acid", formula: "HClO₃", strength: 2.7 },
+  { name: "Bromic Acid", formula: "HBrO₃", strength: 2.6 },
+  { name: "Hypophosphorous Acid", formula: "H₃PO₂", strength: 1.1 },
+  { name: "Pyrophosphoric Acid", formula: "H₄P₂O₇", strength: 1.8 },
+  { name: "Chromic Acid", formula: "H₂CrO₄", strength: 2.4 },
+  { name: "Silicic Acid", formula: "H₄SiO₄", strength: 0.2 },
+  { name: "Arsenic Acid", formula: "H₃AsO₄", strength: 1.4 },
+  { name: "Selenic Acid", formula: "H₂SeO₄", strength: 2.5 },
+  
+  // --- Organic & Carboxylic Acids ---
+  { name: "Butyric Acid", formula: "C₄H₈O₂", strength: 0.7 }, // Smell of rancid butter
+  { name: "Propionic Acid", formula: "CH₃CH₂COOH", strength: 0.75 },
+  { name: "Malic Acid", formula: "C₄H₆O₅", strength: 0.8 }, // Found in apples
+  { name: "Benzoic Acid", formula: "C₇H₆O₂", strength: 0.9 },
+  { name: "Succinic Acid", formula: "C₄H₆O₄", strength: 0.85 },
+  { name: "Glutamic Acid", formula: "C₅H₉NO₄", strength: 0.5 },
+  { name: "Stearic Acid", formula: "C₁₈H₃₆O₂", strength: 0.1 }, // Fatty acid
+  { name: "Uric Acid", formula: "C₅H₄N₄O₃", strength: 0.4 },
+  { name: "Tannic Acid", formula: "C₇₆H₅₂O₄₆", strength: 0.6 },
+  
+  // --- Strong/Halogenated & Special Acids ---
+  { name: "Trifluoroacetic Acid", formula: "CF₃COOH", strength: 2.3 },
+  { name: "Methanesulfonic Acid", formula: "CH₃SO₃H", strength: 2.2 },
+  { name: "Fluoroantimonic Acid", formula: "HSbF₆", strength: 3.5 }, // The strongest superacid
+  { name: "Magic Acid", formula: "FSO₃H·SbF₅", strength: 3.4 },
+  { name: "Triflic Acid", formula: "CF₃SO₃H", strength: 3.2 },
+  { name: "Chlorous Acid", formula: "HClO₂", strength: 1.9 },
+  { name: "Fluorosulphuric Acid", formula: "HSO₃F", strength: 3.1 }
 ];
 
 const BASES = [
-  { name: "Sodium Hydroxide", formula: "NaOH", strength: 2.5 },
-  { name: "Potassium Hydroxide", formula: "KOH", strength: 2.3 },
-  { name: "Ammonia", formula: "NH₃", strength: 1.2 },
-  { name: "Calcium Hydroxide", formula: "Ca(OH)₂", strength: 1.5 },
+  // --- Strong Inorganic Bases ---
+  { name: "Lithium Hydroxide", formula: "LiOH", strength: 2.2 },
+  { name: "Rubidium Hydroxide", formula: "RbOH", strength: 2.4 },
+  { name: "Cesium Hydroxide", formula: "CsOH", strength: 2.6 },
+  { name: "Barium Hydroxide", formula: "Ba(OH)₂", strength: 2.0 },
+  { name: "Strontium Hydroxide", formula: "Sr(OH)₂", strength: 1.8 },
+  { name: "Magnesium Hydroxide", formula: "Mg(OH)₂", strength: 1.1 }, // Milk of Magnesia
+  
+  // --- Weak & Common Bases ---
+  { name: "Sodium Carbonate", formula: "Na₂CO₃", strength: 1.3 }, // Soda Ash
+  { name: "Sodium Bicarbonate", formula: "NaHCO₃", strength: 0.8 }, // Baking Soda
+  { name: "Potassium Carbonate", formula: "K₂CO₃", strength: 1.4 },
+  { name: "Ammonium Hydroxide", formula: "NH₄OH", strength: 1.2 },
+  
+  // --- Nitrogenous/Organic Bases ---
+  { name: "Methylamine", formula: "CH₃NH₂", strength: 1.0 },
+  { name: "Ethylamine", formula: "C₂H₅NH₂", strength: 1.1 },
+  { name: "Pyridine", formula: "C₅H₅N", strength: 0.6 },
+  { name: "Trimethylamine", formula: "N(CH₃)₃", strength: 0.9 },
+  { name: "Aniline", formula: "C₆H₅NH₂", strength: 0.4 },
+  { name: "Urea", formula: "CH₄N₂O", strength: 0.2 },
+  { name: "Guanidine", formula: "HNC(NH₂)₂", strength: 1.7 },
+  
+  // --- Specialized & Superbases ---
+  { name: "Sodium Hydride", formula: "NaH", strength: 2.8 },
+  { name: "Lithium Diisopropylamide", formula: "C₆H₁₄LiN", strength: 3.2 }, // LDA
+  { name: "Sodium Amide", formula: "NaNH₂", strength: 3.0 },
+  { name: "Butyllithium", formula: "C₄H₉Li", strength: 3.5 }, // Extremely reactive
+  { name: "Sodium Ethoxide", formula: "C₂H₅ONa", strength: 2.7 },
+  { name: "Potassium Tert-butoxide", formula: "KOC(CH₃)₃", strength: 2.9 },
+  
+  // --- Miscellaneous ---
+  { name: "Aluminum Hydroxide", formula: "Al(OH)₃", strength: 0.7 },
+  { name: "Iron(III) Hydroxide", formula: "Fe(OH)₃", strength: 0.3 },
+  { name: "Zinc Hydroxide", formula: "Zn(OH)₂", strength: 0.5 }
 ];
 
 export default function ChemicalRoom() {
@@ -92,9 +149,16 @@ export default function ChemicalRoom() {
             transition={{ duration: 0.8 }}
             className="relative z-20 flex flex-col items-center justify-center h-full bg-black/40 backdrop-blur-sm"
           >
+
+            <span className="text-yellow-500 font-mono tracking-[0.4em] mb-4 uppercase text-xs block">
+                Committed to delivering the most immersive and scientifically accurate chemical simulation experience on the web.</span>
+                <span className="text-yellow-400 font-mono tracking-[0.4em] mb-12 uppercase text-xs">
+                Explore, experiment, and discover the wonders of chemistry like never before.
+              </span>
+
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
-              <h1 className="text-7xl md:text-9xl font-black tracking-tighter mb-4 italic">
-                THE <span className="text-blue-500">ROOM</span>
+              <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-4 italic">
+                ELEMENTAL <span className="text-blue-500">INSIGHTS</span>
               </h1>
               <p className="text-white/40 font-mono tracking-[0.4em] mb-12 uppercase text-xs">
                 Advanced Molecular Interaction v2.6
